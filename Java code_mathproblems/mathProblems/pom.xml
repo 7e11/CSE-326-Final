@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>mathProblems</groupId>
+  <artifactId>mathProblems</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>mathProblems-maven</name>
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <resources>
+      <resource>
+        <directory>src</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.7.0</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+  	<!-- https://mvnrepository.com/artifact/com.cedarsoftware/json-io -->
+	<dependency>
+	    <groupId>com.cedarsoftware</groupId>
+	    <artifactId>json-io</artifactId>
+	    <version>2.5.1</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/edu.stanford.nlp/stanford-corenlp -->
+	<dependency>
+	    <groupId>edu.stanford.nlp</groupId>
+	    <artifactId>stanford-corenlp</artifactId>
+	    <version>3.2.0</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/edu.stanford.nlp/stanford-parser -->
+	<dependency>
+	    <groupId>edu.stanford.nlp</groupId>
+	    <artifactId>stanford-parser</artifactId>
+	    <version>3.2.0</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
+	<dependency>
+	    <groupId>org.apache.pdfbox</groupId>
+	    <artifactId>pdfbox</artifactId>
+	    <version>1.8.2</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/tw.edu.ntu.csie/libsvm -->
+	<dependency>
+	    <groupId>tw.edu.ntu.csie</groupId>
+	    <artifactId>libsvm</artifactId>
+	    <version>3.23</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/edu.cmu.lti/ws4j -->
+	<dependency>
+	    <groupId>edu.cmu.lti</groupId>
+	    <artifactId>ws4j</artifactId>
+	    <version>1.0.1</version>
+	</dependency>
+  </dependencies>
+</project>
