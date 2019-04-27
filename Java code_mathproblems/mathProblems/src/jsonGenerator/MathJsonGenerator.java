@@ -16,21 +16,28 @@ import com.cedarsoftware.util.io.JsonWriter;
 
 import equationExtraction.World;
 
+/**
+ * A main class. It must actually do something.
+ * @author Jakob
+ */
 public class MathJsonGenerator {
 	public static void main(String[] args) throws IOException {
 		// if (1 == 1) {
 		// readJsons();
 		// return;
 		// }
+                //takes input file from command line
 		if (args == null || args.length == 0) {
 			System.out.println("Enter input file name");
 			return;
 		}
 		String fileName = args[0];
+                //argument to determine if it has a question
 		boolean hasQuestion = true;
 		if (args.length > 1) {
 			hasQuestion = Boolean.parseBoolean(args[1]);
 		}
+                //write to output
 		String outName = SentenceAnalyzer.refined?"output_refined.txt":"output.txt";
 		if (fileName != null) {
 			
@@ -40,14 +47,28 @@ public class MathJsonGenerator {
 		}
 	}
 
+        /**
+         * Creates a set of World objects from the questions and writes them out
+         * @param input the questions
+         * @param outFileName dest file
+         * @param hasQuestion is there a question?
+         * @throws IOException 
+         */
 	public static void generateJsonForInput(String[] input, String outFileName,
 			boolean hasQuestion) throws IOException {
 		MathCoreNLP.debug = false;
 		World[] worlds = MathCoreNLP.analyzeQuestionsWeb(input, null,
-				hasQuestion);
+				hasQuestion); //find out what this does
 		writeWorlds(worlds, outFileName);
 	}
 
+        /**
+         * Sames as above, but using file instead of input string
+         * @param fileName
+         * @param outFileName
+         * @param hasQuestion
+         * @throws IOException 
+         */
 	public static void generateJsonForInputFromFile(String fileName,
 			String outFileName, boolean hasQuestion) throws IOException {
 		MathCoreNLP.debug = true;
@@ -56,6 +77,12 @@ public class MathJsonGenerator {
 		writeWorlds(worlds, outFileName);
 	}
 
+        /**
+         * Gets string representation of worlds and writes them to file
+         * @param worlds the World objects to write
+         * @param outFileName dest file
+         * @throws IOException 
+         */
 	static void writeWorlds(World[] worlds, String outFileName)
 			throws IOException {
 		if (outFileName == null) {
@@ -67,9 +94,7 @@ public class MathJsonGenerator {
 		for (World w : worlds) {
 			ArrayList<CompactQuantitativeEntity> compactQEntities = new ArrayList<CompactQuantitativeEntity>();
 			numQ++;
-			// if (w==null){
-			// continue;
-			// }
+                        //filter out quantitative entities with null verbs
 			for (QuantitativeEntity qent : w.quantitativeEntities) {
 				if (qent.getVerbid()!=null){
 					compactQEntities.add(new CompactQuantitativeEntity(qent));
@@ -81,9 +106,11 @@ public class MathJsonGenerator {
 				compactQEntities.add(new CompactQuantitativeEntity(w.qCEntity));
 				i++;
 			}
+                        //Make json from the quantitative entities
 			System.out.println("cent " + i + ": " + w.qCEntity);
 			String json = JsonWriter.objectToJson(compactQEntities);
 			System.out.println("NQ: "+numQ);
+                        //BS magic numbers with no meaning...
 			if (!SentenceAnalyzer.refined){
 				if (numQ==250 || numQ==390 || numQ==525){
 					System.out.println("numberofcents: "+ i);

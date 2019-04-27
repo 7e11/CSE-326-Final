@@ -25,8 +25,8 @@ public class ActionSpecifier implements Comparable {
 
 	public ActionSpecifier(QuantitativeEntity cent, World w) {
 		this.w = w;
-		Entity subj = cent.getAf().getSubject();
-		subjIsPerson = subj != null && subj.isPerson();
+		Entity subj = cent.getAf().getSubject(); //uses a sentence analyzer to get the subject of the sentence
+		subjIsPerson = subj != null && subj.isPerson(); //determines if the subject is classified as a person
 		this.cent = cent;
 		verb = "null";
 		if (cent.getVerbid() != null) {

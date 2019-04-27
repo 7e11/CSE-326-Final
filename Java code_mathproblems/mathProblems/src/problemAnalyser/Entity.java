@@ -21,22 +21,33 @@ public class Entity {
 	boolean isPerson;
 	//identifies whether the entity is a person or not, mainly used for subj
 	
+	//for makeCopy
+	public Entity() {}
 	
-	public Entity() {//for makeCopy
-		
-	}
-	
+        /**
+         * @return true if the entity is a person
+         */
 	public boolean isPerson() {
 		return wi.NE.equals("PERSON");
 	}
 
+        /**
+         * For entities with a named quantity
+         * @param tdnode a parse tree representing the sentence the entity is in
+         * @param afs AFSentenceAnalyzer for the sentence the entity is in
+         */
 	public Entity(TreeGraphNode tdnode, AFSentenceAnalyzer afs) {
-		this(tdnode.index(),afs);
-		index = tdnode.index();
-		this.name = afs.getLemma(index);
+		this(tdnode.index(),afs); //call the constructor below
+		index = tdnode.index(); //predefined index
+		this.name = afs.getLemma(index); //sets the name for us
 	}
-	// when there is no name for the counted entity! e.g., I have 3.
-	public Entity(int numIndex, AFSentenceAnalyzer afs) {
+        
+	/**
+         * when there is no name for the counted entity! e.g., I have 3.
+         * @param numIndex
+         * @param afs AFSentenceAnalyzer for the sentence this entity is in?
+         */
+        public Entity(int numIndex, AFSentenceAnalyzer afs) {
 		this.index = numIndex;
 		this.afs = afs;
 		nns = new ArrayList<String>();
@@ -51,10 +62,17 @@ public class Entity {
 		this.isPerson = wi.NE.equals("PERSON");
 	}
 	
+        /**
+         * list of words from dependencies based on a specific relation
+         * @param dependencies list of dependencies, which contain a governor word, a dependent word, and the relation between the two
+         * @param relName type of relation?
+         * @param relateds 
+         */
 	void addRelateds(Collection<TypedDependency> dependencies, String relName, List<String> relateds){
 		for (TypedDependency tde:dependencies){
-			String tdeRelName = tde.reln().toString();
+			String tdeRelName = tde.reln().toString(); //relation type from the TypedDependency
 			boolean shouldIgnore = false;
+                        //we don't need to do anything with rel names nn, amod, num
 			if (relName.equals("")){
 				for (String s:processedRelNames){
 					if (s.equals(tdeRelName)){
@@ -66,7 +84,11 @@ public class Entity {
 					continue;
 				}
 			}
+                        //if it's not one of those three, we travel down here
+                        //enter this if statement if the dependency's relation type is the one specified by parameter relName
+                        //(or any if relName is "", and also the governor word's index must be equal to the Entity's index field
 			if ((tdeRelName.equals(relName) || relName.equals("") ) && Util.getNumber(tde.gov()) == index){
+                                //ignore words whose lemma is "the" or "poss", otherwise add them to the list of relateds
 				String o = afs.getLemma(tde.dep().index());
 				String oRelName = tde.reln().getShortName();
 				if (o.equals("the") || oRelName.equals("poss")){
@@ -140,16 +162,28 @@ public class Entity {
 		return str;
 	}
 	
+        /**
+         * Copies some features from another entity into this in certain conditions
+         * @param en some other entity to copy amods and nns and wordinfo from
+         * @param isQuestion is the question entity
+         */
 	public void absorbFeatures(Entity en, boolean isQuestion){
 		this.name = en.name;
+                //if no amods or nns in this entity, or its' the question entity (final entity)
 		if ((this.amods.size()==0 && this.nns.size()==0)
 				|| isQuestion){
+                        //copy into our (empty) list of amods and nns those of the Entity en
 			Util.getCopy(this.amods, en.amods);
 			Util.getCopy(this.nns, en.nns);
 		}
+                //set our word info to the en's
 		this.wi = en.wi;
 	}
 	
+        /**
+         * @param ent1 an entity
+         * @return if ent1 is equal to this entity
+         */
 	public boolean match(Entity ent1){
 		if (!Util.SEqual(ent1.name, name)){
 			return false;
@@ -161,6 +195,9 @@ public class Entity {
 		return true;
 	}
 	
+        /**
+         * @return deep copy of an entity
+         */
 	public Entity getCopy(){
 		Entity ret = new Entity();
 		ret.name = name;

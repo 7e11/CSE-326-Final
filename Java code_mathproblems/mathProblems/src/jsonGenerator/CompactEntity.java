@@ -4,7 +4,11 @@ import java.util.List;
 
 import problemAnalyser.AFSentenceAnalyzer;
 import problemAnalyser.Entity;
-
+/**
+ * For just storing the data an Entity in JSON form.
+ * Only includes 7 fields and none of the behaviors.
+ * @author Jakob
+ */
 public class CompactEntity {
 	String name;
 	int index;
@@ -14,6 +18,10 @@ public class CompactEntity {
 	List<String> otherRels;
 	List<String> otherRelsNames;
 	boolean isPerson;
+        /**
+         * Create entity from entity object
+         * @param ent 
+         */
 	public CompactEntity(Entity ent) {
 		if (ent==null){
 			return;
@@ -26,6 +34,17 @@ public class CompactEntity {
 		otherRelsNames = ent.getOtherRelsNames();
 		isPerson = ent.isPerson();
 	}
+        
+        /**
+         * Create compact entity directly from the fields
+         * @param name
+         * @param index
+         * @param nns
+         * @param amods
+         * @param otherRels
+         * @param otherRelsNames
+         * @param isPerson 
+         */
 	public CompactEntity(String name, int index, List<String> nns, List<String> amods, List<String> otherRels, List<String> otherRelsNames, boolean isPerson) {
 		this.name = name;
 		this.index = index;
@@ -36,6 +55,9 @@ public class CompactEntity {
 		this.isPerson = isPerson;
 	}
 	
+        /**
+         * String representation for JSON
+         **/
 	public String toString(){
 		String str = "";
 		if (amods.size()>0){

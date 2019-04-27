@@ -5,7 +5,11 @@ import java.util.ArrayList;
 import problemAnalyser.Entity;
 import problemAnalyser.QuantitativeEntity;
 import edu.stanford.nlp.ling.IndexedWord;
-
+/**
+ * Like CompactEntity, this stores data from several important fields
+ * in an object without the overhead of all the methods in QuantitativeEntity.
+ * @author Jakob
+ */
 public class CompactQuantitativeEntity {
 	boolean isQuestion = false;
 	boolean foundRealEntity;// it is mainly used for questions to

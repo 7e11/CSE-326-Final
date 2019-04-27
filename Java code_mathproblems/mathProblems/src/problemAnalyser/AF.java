@@ -13,16 +13,16 @@ import edu.stanford.nlp.trees.TreeGraphNode;
 import edu.stanford.nlp.trees.TypedDependency;
 
 public class AF {
-	Entity subject;
+	Entity subject; //the subject of the sentence
 	private Entity iobj;// used for transfer, not just iobj
 
 	Entity time;
 	Entity place;
-	IndexedWord verbid;
-	ArrayList<String> verbRels;
+	IndexedWord verbid; //the sentence's verb
+	ArrayList<String> verbRels; //dependency relations involving the verb
 	boolean passive = false;
-	static HashSet<String> acceptablePlaceRels;
-	static HashSet<String> acceptableEachStrs;
+	static HashSet<String> acceptablePlaceRels; //the set of prepositional (place) relations we can use
+	static HashSet<String> acceptableEachStrs; //hardcoded modifiers like each, an, a, for things
 	boolean ibojSet = false;
 
 	private ArrayList<QuantitativeEntity> cents;
@@ -45,12 +45,18 @@ public class AF {
 		acceptableEachStrs.add("a");
 	}
 
+        /**
+         * 
+         * @param afs AFSentenceAnalyzer (WHAT IS THAT) for the sentence
+         * @param dependenciesTree Stanford dependency tree of the sentence
+         * @param verbid verb of the sentence
+         */
 	public AF(AFSentenceAnalyzer afs, SemanticGraph dependenciesTree,
 			IndexedWord verbid) {
 		this.afs = afs;
 		this.dependencies = afs.dependencies;
 		this.dependenciesTree = dependenciesTree;
-		cents = new ArrayList<QuantitativeEntity>();
+		cents = new ArrayList<QuantitativeEntity>(); //numerical entities in sentence
 		this.verbid = verbid;
 		eachrelations = new ArrayList<EachRelation>();
 		// MathCoreNLP.println(verbid.index());
@@ -61,6 +67,9 @@ public class AF {
 		// }
 	}
 
+        /**
+         * Some sort of setup...find these methods and document them
+         */
 	public void resolveAF() {
 		setTime();
 		setSubject();
@@ -72,20 +81,28 @@ public class AF {
 		setEachRelations();
 	}
 
+        /**
+         * One of the setup functions.
+         * Finds the each relations "each, an, a" and does something to them
+         */
 	void setEachRelations() {
-		for (TypedDependency tde : dependencies) {
+		for (TypedDependency tde : dependencies) { //iterate thru the sentences dependencies
+                        //if it's an each/an/a relation
 			if (tde.reln().toString().equals("det")
 					&& acceptableEachStrs.contains(tde.dep().nodeString()
 							.toLowerCase())) {
 				// SentenceAnalyzer.println("each seen for "+tde.gov().nodeString());
+                                //make entity from the governor word and the AFSentenceAnalyzer
 				Entity ent1 = new Entity(tde.gov(), afs);
+                                //don't do anything if...COME BACK TO THIS
 				if (afs.usedEachIds.contains(ent1.index)) {
 					continue;
 				}
 				String n1 = 1 + "";
-				int dis = 100000;
+				int dis = 100000; //max distance
 				Entity ent2 = null;
 				String n2 = "";
+                                //finds the closest entity in cents to ent1 and assigns it to ent2
 				for (QuantitativeEntity cent : cents) {
 					if (Math.abs(cent.entity.index - ent1.index) < dis) {
 						dis = Math.abs(cent.entity.index - ent1.index);
