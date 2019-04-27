@@ -5,10 +5,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Scanner;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
 import com.cedarsoftware.util.io.JsonObject;
 import com.cedarsoftware.util.io.JsonWriter;
 
@@ -47,12 +45,23 @@ public class GenerateJson {
 
 }
 
+/**
+ * For representing a math problem in JSON format
+ * @author Jakob
+ */
 class Json {
-	int iIndex;
-	String sQuestion;
-	ArrayList<String> lEquations;
-	ArrayList<String> lSolutions;
+	int iIndex; //question number
+	String sQuestion; //question text
+	ArrayList<String> lEquations; //the list of valid equations
+	ArrayList<String> lSolutions; //list of valid solutions
 
+        /**
+         * Creates a JSON representation of a question
+         * @param iIndex question index
+         * @param q question string
+         * @param eq valid equation
+         * @param ans  valid answer
+         */
 	public Json(int iIndex, String q, String eq, String ans) {
 		this.iIndex = iIndex;
 		this.sQuestion = q;
@@ -62,6 +71,11 @@ class Json {
 		this.lSolutions.add(ans);
 	}
 
+        /**
+         * Sets up a hashmap representing the args and values of the
+         * question's JSON representation
+         * @return said hashmap
+         */
 	JSONObject getJsonObj() {
 		JSONObject ret = new JSONObject();
 

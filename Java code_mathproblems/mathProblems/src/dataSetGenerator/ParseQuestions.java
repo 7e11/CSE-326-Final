@@ -22,6 +22,11 @@ public class ParseQuestions {
 		parseMathAids();
 	}
 
+        /**
+         * Gets a PDF and puts the text contents in a string.
+         * @param f PDF file
+         * @return string contents
+         */
 	static String readPDF(File f) {
 		PDDocument document;
 
@@ -51,6 +56,10 @@ public class ParseQuestions {
 		return null;
 	}
 
+        /**
+         * Converts PDF question files to Excel? Why?
+         * @throws FileNotFoundException 
+         */
 	static void parseMathAids() throws FileNotFoundException {
 		String folderName = "other/irrelevant_math-aids/";
 		File folder = new File(
@@ -58,6 +67,7 @@ public class ParseQuestions {
 		File[] files = folder.listFiles();
 		PrintStream op = new PrintStream(new File(folderName + "mathDS2.xls"));
 		op.println("Question\tNum\tObject");
+                //Reads the PDF files in some folder and creates an excel file
 		for (File f : files) {
 			if (!f.getName().endsWith(".pdf")){
 				continue;
@@ -78,10 +88,15 @@ public class ParseQuestions {
 
 	}
 
+        /**
+         * @param f a pdf file
+         * @return a set of valid questions in the file
+         */
 	static ArrayList<MAidQuestion> parseMathAidsFile(File f) {
-		String docs = readPDF(f);
+		String docs = readPDF(f); //pdf contents as string
 		Scanner sc = new Scanner(docs);
 		String line = sc.nextLine();
+                //go to after the 2nd line beginning with 1) ???
 		while (!line.startsWith("1 )") && !line.startsWith("1)")) {
 			line = sc.nextLine();
 		}
@@ -89,12 +104,14 @@ public class ParseQuestions {
 		while (!line.startsWith("1 )") && !line.startsWith("1)")) {
 			line = sc.nextLine();
 		}
-		int qnum = 1;
+		int qnum = 1; //question number
 		ArrayList<MAidQuestion> maidQuestions = new ArrayList<MAidQuestion>();
 
 		while (sc.hasNext()) {
 			String q = "";
 			qnum++;
+                        //gets the question into a string, even if it is on
+                        //multiple lines, ending with #)
 			while (!line.startsWith(qnum + " )") &&
 					!line.startsWith(qnum + ")")) {
 				q = q + line + " ";
@@ -103,6 +120,7 @@ public class ParseQuestions {
 				}
 				line = sc.nextLine();
 			}
+                        //makes sure string is valid question
 			MAidQuestion mq = new MAidQuestion(q);
 			if (mq.goodQ) {
 				maidQuestions.add(mq);
