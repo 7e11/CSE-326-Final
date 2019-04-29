@@ -1,0 +1,11 @@
+.project
+Java\ code_mathproblems/.project
+Java\ code_mathproblems/__MACOSX/
+Java\ code_mathproblems/.idea
+**/.classpath
+**/.DS_Store
+**/stanford-parser-full-2013-06-20/
+**/stanford-corenlp-full-2013-06-20/
+**/.project
+**/.settings/
+**/target/
