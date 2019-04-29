@@ -8,8 +8,7 @@ import edu.stanford.nlp.trees.TreeGraphNode;
 import edu.stanford.nlp.trees.TypedDependency;
 
 /**
- * Class for Quantitative Entities, numbers which represent a quantity
- * of some object.
+ * Makes a quantitative entity containing an Entity and a numeric quantity. 
  * @author Jakob
  */
 public class QuantitativeEntity {
@@ -24,7 +23,7 @@ public class QuantitativeEntity {
 	// find out whether the qent is matched with previous ents or not. If not matched, 
 	// this flag will be false.
         
-        //used 3 times in QuestionAnalyzer and around line 570 in AFSentenceAnalyzer
+        //determines whether an entity corresponds to a number or not ("he gave some of them to Sara")
 	boolean fakeEntity = false;
 	
         //number associated with the quantity

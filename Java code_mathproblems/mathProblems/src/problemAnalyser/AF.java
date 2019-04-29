@@ -16,17 +16,17 @@ public class AF {
 	Entity subject; //the subject of the sentence
 	private Entity iobj;// used for transfer, not just iobj
 
-	Entity time;
-	Entity place;
+	Entity time; //extracted by parser
+	Entity place; //extracted by parser
 	IndexedWord verbid; //the sentence's verb
 	ArrayList<String> verbRels; //dependency relations involving the verb
-	boolean passive = false;
+	boolean passive = false; //does the sentence have a passive voice?
 	static HashSet<String> acceptablePlaceRels; //the set of prepositional (place) relations we can use
 	static HashSet<String> acceptableEachStrs; //hardcoded modifiers like each, an, a, for things
 	boolean ibojSet = false;
 
-	private ArrayList<QuantitativeEntity> cents;
-	Collection<TypedDependency> dependencies;
+	private ArrayList<QuantitativeEntity> cents; //the quantitative entities in the centence
+	Collection<TypedDependency> dependencies; //the dependencies from the stanford dependency parser
 	SemanticGraph dependenciesTree;
 	AFSentenceAnalyzer afs;
 	ArrayList<EachRelation> eachrelations;
@@ -59,12 +59,6 @@ public class AF {
 		cents = new ArrayList<QuantitativeEntity>(); //numerical entities in sentence
 		this.verbid = verbid;
 		eachrelations = new ArrayList<EachRelation>();
-		// MathCoreNLP.println(verbid.index());
-		// if (verbid != null) {
-		// this.verb = afs.getLemma(verbid.index());
-		// } else {
-		// MathCoreNLP.println("null verb");
-		// }
 	}
 
         /**
@@ -111,10 +105,6 @@ public class AF {
 					}
 				}
 				if (ent2 != null) {
-					// SentenceAnalyzer.println("n1: "+n1);
-					// SentenceAnalyzer.println("n2: "+n2);
-					// SentenceAnalyzer.println("ent1: "+ent1);
-					// SentenceAnalyzer.println("ent2: "+ent2);
 					EachRelation er = new EachRelation(ent1, ent2, n1, n2);
 					eachrelations.add(er);
 					afs.usedEachIds.add(ent1.index);
@@ -123,15 +113,20 @@ public class AF {
 		}
 	}
 
+        /**
+         * 
+         */
 	void setVerbRels() {
-		verbRels = new ArrayList<String>();
+		verbRels = new ArrayList<String>(); //verb relations
+                //if there's no verb, get out of here
 		if (verbid == null) {
 			return;
 		}
 		for (TypedDependency tde : dependencies) {
+                        //if a dependency's governor is our sentence's verb
 			if (tde.gov().index() == verbid.index()) {
 				String reln = tde.reln().toString();
-				verbRels.add(reln);
+				verbRels.add(reln); //add the relation to our sentence's list of relations
 				if (!MathCoreNLP.verbRelsCounts.containsKey(reln)) {
 					MathCoreNLP.verbRelsCounts.put(reln, 0);
 				}
@@ -139,21 +134,27 @@ public class AF {
 				MathCoreNLP.verbRelsCounts.put(reln, c + 1);
 			}
 		}
-		// SentenceAnalyzer.println("vRels: " + verbRels);
 	}
 
+        /**
+         * @return the list of verb relation encodings
+         */
 	public ArrayList<String> getVerbRels() {
 		return verbRels;
 	}
 
+        /**
+         * If it says "he did X", change the verb from did to X
+         */
 	void resolveDoDid() {
-		if (cents.get(0).isQuestion && verbid != null) {
+		if (cents.get(0).isQuestion && verbid != null) { //verifies that we have the question entity and the verb is not null
 			if (verbid.lemma().equals("did") || verbid.lemma().equals("do")) {
+                                //go thru these dependencies
 				for (TypedDependency td : dependencies) {
-					if (td.reln().toString().equals("dobj")) {
-						if (td.gov().index() == verbid.index()) {
+					if (td.reln().toString().equals("dobj")) { //direct object. "Rakesh does a thing", a thing
+						if (td.gov().index() == verbid.index()) { //"does"?
 
-							verbid = afs.getIndexedWord(td.dep().index());
+							verbid = afs.getIndexedWord(td.dep().index()); //change the verb to be "a thing"
 							MathCoreNLP.println("herell " + verbid.lemma());
 							for (QuantitativeEntity cent : cents) {
 								cent.verbid = verbid;
@@ -168,32 +169,40 @@ public class AF {
 		}
 	}
 
+        /**
+         * Finds temporal modifiers and sets the AF's time field if it finds one
+         */
 	void setTime() {
 		if (verbid == null) {
 			return;
 		}
+                //Find all temporal modifiers ("I love Sara forever" --> forever)
+                //gov: love, dep: forever
 		for (TypedDependency tde : dependencies) {
 			if (tde.reln().toString().equals("tmod")) {
+                                //if the temporal modifier is the sentence's verb, set the time as a new entity
 				if (tde.gov().index() == verbid.index()) {
-					time = new Entity(tde.dep(), afs);
+					time = new Entity(tde.dep(), afs); //time field is "forever"
 				}
 			}
 		}
 	}
 
+        /**
+         * 
+         */
 	void setPlace() {
 		if (verbid == null) {
 			return;
 		}
 		SentenceAnalyzer.println("setting vid for "+verbid.index());
 		int distanceToVerb = -1;
+                //find a place relation from the list of acceptable place relations
+                //prep_in,prep_at,prep_on,prep_into,prep_out_of
 		for (TypedDependency tde : dependencies) {
 			String reln = tde.reln().toString();
 			if (acceptablePlaceRels.contains(reln)) {
-//				if (tde.gov().index() == cents.get(0).entity.index){
-//					place = new Entity(tde.dep(), afs);
-//					return;
-//				}
+                                //finds the shortest path to and place rel on the dependency tree and sets the place field to it
 				List<SemanticGraphEdge> path = dependenciesTree
 						.getShortestDirectedPathEdges(afs.getIndexedWord(cents.get(0).entity.index),
 								afs.getIndexedWord(tde.dep().index()));
@@ -212,29 +221,39 @@ public class AF {
 		}
 	}
 
+        /**
+         * Sets the subject of the sentence
+         */
 	void setSubject() {
 		if (verbid == null) {
 			return;
 		}
 		String selectedReln = "";
+                //go thru all dependencies in the sentence. find a relation that
+                //matches nsubj, agent, or auxpass. agent is best, so we try to find that if possible
+                //Agent: "Sara is loved by Rakesh" --> agent(loved, Rakesh)
+                //nsubj (Nominal Subject): "Rakesh loves Sara" --> nsubj(loves, Rakesh)
+                //"Sara is beautiful. " --> nsubj(beautiful, Sara) auxpass(beautiful, is)
 		for (TypedDependency tde : dependencies) {
 			String reln = tde.reln().toString();
 			if (reln.equals("nsubj") || reln.equals("agent")
 					|| reln.equals("auxpass")) {
-				// agent is better than auxpass!!!
+				// agent is better than auxpass!!! [author put this here]
 				if (selectedReln.equals("agent") && reln.equals("auxpass")) {
 					continue;
 				}
 				selectedReln = reln;
 
 				if (tde.gov().index() == verbid.index()) {
+                                        //create an entity for the sentence's subject
 					subject = new Entity(tde.dep(), afs);
 					int subjIdx = tde.dep().index();
-					// MathCoreNLP.println("it is "+subjIdx+" "+afs.getWordInfo(subjIdx));
+                                        //figure out if the subject is a person
 					if (afs.getWordInfo(subjIdx).NE.equals("PERSON")) {
 						subject.isPerson = true;
 					}
-
+                                        
+                                        //look at the examples aboev, they sound passive
 					if (reln.equals("auxpass") || reln.equals("agent")) {
 						passive = true;
 					}
@@ -255,9 +274,14 @@ public class AF {
 
 			}
 		}
+                //we are using a person id (subject.index) to represent this person in the equation
 		if (subject != null && subject.isPerson) {
 			afs.usedPersonIds.add(subject.index);
 		}
+                
+                //if we can't find a subject, look for the subject of the verb (governor)
+                //component of the first nsubj relation we find
+                //save the old verbid and set it back after finding the subject of the sentence
 		if (subject == null){
 			for (TypedDependency tde : dependencies) {
 				if (tde.reln().toString().equals("nsubj")){
@@ -271,6 +295,11 @@ public class AF {
 		}
 	}
 
+        /**
+         * Sets indirect object
+         * We want to find an iobj or dobj dependency with the smallest(?) distance path in the dependency tree
+         * Set iobj field to this Entity if it is a person
+         */
 	public void setIobj() {
 		int distanceToVerb = -1;
 		boolean isPersonFound = false;
@@ -318,7 +347,6 @@ public class AF {
 			}
 		}
 
-		// SentenceAnalyzer.println("it is: "+iobj);
 		// find the nearest person to verb
 		if (iobj == null) {
 			Entity ent = getNPersontoIdxedWord(verbid);
@@ -338,6 +366,10 @@ public class AF {
 
 	}
 
+        /**
+         * Simple getter for iobj
+         * @return the sentence's indirect object
+         */
 	public Entity getIobj() {
 		if (!ibojSet) {
 			setIobj();
@@ -346,10 +378,16 @@ public class AF {
 		return iobj;
 	}
 
+        /**
+         * Returns person who is closest in the dependency parse tree to some word
+         * @param first root word in tree
+         * @return person closest in the dependency tree to the word "first"
+         */
 	Entity getNPersontoIdxedWord(IndexedWord first) {
 		int distanceToVerb = -1;
 		Entity ret = null;
-		for (TypedDependency tde : dependencies) {
+		for (TypedDependency tde : dependencies) { //iterate thru sentence's dependencies
+                        //find prople from both the governor and dependent nodes and add them to a list
 			List<TreeGraphNode> personNodes = new ArrayList<TreeGraphNode>();
 			if (afs.getWordInfo(tde.gov().index()).NE.equals("PERSON")) {
 				personNodes.add(tde.gov());
@@ -357,6 +395,8 @@ public class AF {
 			if (afs.getWordInfo(tde.dep().index()).NE.equals("PERSON")) {
 				personNodes.add(tde.dep());
 			}
+                        //for each of the people (at most 2?)
+                        //make ret the person Entity with the shortest path in the trees
 			for (TreeGraphNode tgn : personNodes) {
 				List<SemanticGraphEdge> path = dependenciesTree
 						.getShortestDirectedPathEdges(first,
@@ -374,6 +414,9 @@ public class AF {
 		return ret;
 	}
 
+        /**
+         * @return string representation of AF
+         */
 	public String toString() {
 		String str = "";
 		str += ("verb: " + ((verbid != null) ? verbid.lemma() : "null")) + "\n";
@@ -395,6 +438,10 @@ public class AF {
 		return str;
 	}
 
+        /**
+         * add an entity to the list and set its af field to this AF
+         * @param cent 
+         */
 	public void addCent(QuantitativeEntity cent) {
 		cents.add(cent);
 		cent.af = this;
@@ -435,7 +482,11 @@ public class AF {
 	public boolean isPassive() {
 		return passive;
 	}
-
+        
+        /**
+         * Determines if the sentence's subject is "meaningful"
+         * @return true if the subject is a person or meets some weird condition below
+         */
 	public boolean isSubjMeaningFul() {
 		if (subject == null) {
 			return false;
@@ -449,6 +500,7 @@ public class AF {
 		if (afs.dependencies.toString().contains("expl")) {
 			return false;
 		}
+                //subject is the number in the question entity
 		if (subject.getName()!=null && 
 				subject.getName().equals(cents.get(0).getNum())){
 			SentenceAnalyzer.println("our case");
@@ -457,6 +509,7 @@ public class AF {
 //		if (subject.name.equals(cents.get(0).entity.name)){
 //			return false;
 //		}
+                //find entities whose name equals the subject's name, unless the entity's num is null, 1, or 2, return false
 		for (int i = 0; i < cents.size(); i++) {
 			if (subject.name.equals(cents.get(i).getName())) {
 				String num = cents.get(i).getNum();
